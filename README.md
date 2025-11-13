@@ -19,3 +19,5 @@ A lightweight web game that lets users generate random Pokémon (or whatever fun
    git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git
    cd YOUR_REPO
 
+## License
+This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.
