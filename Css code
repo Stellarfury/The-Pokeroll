@@ -1,0 +1,10 @@
+body{font-family:sans-serif;margin:2rem}
+.die{border:1px solid #000;padding:.3rem .6rem;margin:.2rem;display:inline-block}
+#diceDisplay{margin-top:1rem}
+ul{margin:0;padding:0;list-style:none}
+#scoreboard{margin-top:2rem}
+body{font-family:sans-serif;margin:2rem}
+.die{border:1px solid #000;padding:.3rem .6rem;margin:.2rem;display:inline-block}
+#diceDisplay{margin-top:1rem}
+ul{margin:0;padding:0;list-style:none}
+#scoreboard{margin-top:2rem}
