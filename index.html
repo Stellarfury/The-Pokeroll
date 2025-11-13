@@ -2,56 +2,63 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>The Pokémon Generator</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Your Game – Auth0 Login</title>
+  <style>
+    /* Make the buttons big and easy to tap */
+    .big-btn {
+      font-size: 1.2rem;
+      padding: 0.8rem 1.5rem;
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 0.5rem;
+    }
+    body {font-family: sans-serif; padding: 1rem;}
+  </style>
 </head>
 <body>
 
+  <!-- Login area – shown before the user signs in -->
   <div id="login">
-  <button class="big-btn" onclick="login()">Sign In</button>
-  <button class="big-btn" onclick="signup()">Sign Up</button>
-  </div>
-  
-  
-
-<div id="game" style="display:none;">
-  <h2>Welcome, <span id="player"></span></h2>
-
-  <div id="dice">
-    <button id="roll">Roll Dice</button>
-    <div id="diceDisplay"></div>
+    <button class="big-btn" onclick="login()">Sign In</button>
+    <button class="big-btn" onclick="signup()">Sign Up</button>
   </div>
 
-  <div id="result">
-    <h3>Pokémon you got:</h3>
-    <ul id="pokeList"></ul>
-    <p>Total points: <span id="total">0</span></p>
+  <!-- Game area – hidden until the user is logged in -->
+  <div id="game" style="display:none;">
+    <h2>Welcome, <span id="player"></span>!</h2>
+    <!-- Your game UI goes here -->
+    <button class="big-btn" onclick="logout()">Log Out</button>
   </div>
 
-  <div id="scoreboard">
-    <h3>Scoreboard (this browser)</h3>
-    <ul id="scores"></ul>
-  </div>
-</div>
+  <!-- Auth0 SDK and client initialization -->
+  <script src="https:                                                                           
+  <script type="module">
+    import createAuth0Client from 'https:                                                                  
 
-<script src="app.js"></script>
-<script src="https:                                                                           
-<script type="module">
-  import createAuth0Client from 'https:                                                                  
+                              
+    const auth0 = await createAuth0Client({
+      domain: 'YOUR_AUTH0_DOMAIN',                                 
+      client_id: 'YOUR_CLIENT_ID',                                  
+      redirect_uri: window.location.origin
+    });
 
-                                                
-  const auth0 = await createAuth0Client({
-    domain: 'YOUR_AUTH0_DOMAIN',                                         
-    client_id: 'YOUR_CLIENT_ID',      // ← replace with your own client ID
-    redirect_uri: window.location.origin
-  });
+                                                                   
+    window.login = () => auth0.loginWithRedirect();
+    window.signup = () => auth0.loginWithRedirect({ screen_hint: 'signup' });
+    window.logout = () => auth0.logout({ returnTo: window.location.origin });
 
-  // These functions will be called from the buttons
-  window.login = () => auth0.loginWithRedirect();
-  window.logout = () => auth0.logout({ returnTo: window.location.origin });
-    </script>
+                                                               
+    (async () => {
+      const user = await auth0.getUser();
+      if (user) {
+        document.getElementById('login').style.display = 'none';
+        document.getElementById('game').style.display = 'block';
+        document.getElementById('player').textContent = user.name || user.email;
+      }
+    })();
+
+    console.log('Auth0 client ready'); // optional debug line
+  </script>
 </body>
-                       </html>
-                       
-<button onclick="logout()">Log Out</button>
-<button onclick="alert('Button works!')">Click me</button>
+  </html>
+  
