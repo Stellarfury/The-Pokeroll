@@ -8,3 +8,10 @@ body{font-family:sans-serif;margin:2rem}
 #diceDisplay{margin-top:1rem}
 ul{margin:0;padding:0;list-style:none}
 #scoreboard{margin-top:2rem}
+.big-btn {
+  font-size: 1.2rem;
+  padding: 00.8rem 11.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 0.5rem;
+}
