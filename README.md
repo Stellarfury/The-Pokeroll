@@ -1,4 +1,4 @@
-# THE POKÉMON Generator
+# THE POKÉroll
 
 A lightweight web game that lets users generate random Pokémon (or whatever fun logic you add) and saves their session with Auth0 authentication.
 
