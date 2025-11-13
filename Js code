@@ -103,3 +103,4 @@ function updateScoreboard(newPoints) {
   scoresUl.innerHTML += entry;
   localStorage.setItem('pokemonScores', scoresUl.innerHTML);
 }
+window.signup = () => auth0.loginWithRedirect({ screen_hint: 'signup' });
