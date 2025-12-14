@@ -5,7 +5,7 @@
   <title>Pokéroll – The Pokémon Generator</title>
   <style>
     body {font-family:sans-serif;padding:1rem;}
-    .big-btn {font-size:1.2rem;padding:0.8rem 1.5rem;width:100%;margin-top:.5rem;}
+    .big-btn {font-size:1.2rem;padding:00.8rem 1.5rem;width:100%;margin-top:.5rem;}
     .center {text-align:center;}
     #game, #waiting, #result {display:none;}
     #diceResult img {width:100px;height:100px;}
@@ -18,72 +18,91 @@
   <!-- Socket.io client -->
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
-
 <body>
-  <!-- 1️⃣ Welcome / login screen -->
-  <div id="welcome" class="center">
-       <video id="logo" autoplay loop muted style="pointer-events:none;">
-     <source src="https://raw.githubusercontent.com/Stellarfury/The-Pokeroll/main/logo.mp4" type="video/mp4">
-     Your browser does not support the video tag.
-   </video>
 
-    
-    <h2>Welcome to Pokéroll!</h2>
-    <button class="big-btn" onclick="login()">Log In</button>
-    <button class="big-btn" onclick="signup()">Sign Up</button>
-    <button class="big-btn" onclick="playAsGuest()">Play as Guest</button>
-  </div>
+<!-- 1️⃣ Welcome / login screen -->
+<div id="welcome" class="center">
+  <video id="logo" autoplay loop muted style="pointer-events:none;">
+    <source src="https:                                                                                     
+    Your browser does not support the video tag.
+  </video>
+  <h2>Welcome to Pokéroll!</h2>
+  <button class="big-btn" onclick="login()">Log In</button>
+  <button class="big-btn" onclick="signup()">Sign Up</button>
+  <button class="big-btn" onclick="playAsGuest()">Play as Guest</button>
+</div>
 
-  <!-- 2️⃣ Waiting for opponent -->
-  <div id="waiting" class="center">
-    <h2>Looking for an opponent…</h2>
-  </div>
+<!-- 2️⃣ Waiting for opponent -->
+<div id="waiting" class="center">
+  <h2>Looking for an opponent…</h2>
+</div>
 
-  <!-- 3️⃣ Game screen -->
-  <div id="game">
-    <h2>Your turn – <span id="opponent"></span></h2>
-    <div id="diceResult">Roll the dice!</div>
-    <button class="big-btn" onclick="rollDice()">Roll Dice</button>
-    <button class="big-btn" onclick="exitGame()">Exit Game</button>
-    <hr>
-    <div>Your score: <span id="myScore">0</span></div>
-    <div>Opponent score: <span id="oppScore">0</span></div>
-    <div id="timer">Time left: 10:00</div>
-  </div>
+<!-- 3️⃣ Game screen -->
+<div id="game">
+  <h2>Your turn – <span id="opponent"></span></h2>
+  <div id="diceResult">Roll the dice!</div>
+  <button class="big-btn" onclick="rollDice()">Roll Dice</button>
+  <button class="big-btn" onclick="exitGame()">Exit Game</button>
+  <hr>
+  <div>Your score: <span id="myScore">0</span></div>
+  <div>Opponent score: <span id="oppScore">0</span></div>
+  <div id="timer">Time left: 10:00</div>
+</div>
 
-  <!-- 4️⃣ Result screen -->
-  <div id="result" class="center">
-    <h2 id="resultText"></h2>
-    <button class="big-btn" onclick="startAnother()">Play Again</button>
-  </div>
+<!-- 4️⃣ Result screen -->
+<div id="result" class="center">
+  <h2 id="resultText"></h2>
+  <button class="big-btn" onclick="startAnother()">Play Again</button>
+</div>
 
-  <script type="module">
-    // -------------------------------------------------------------
-    // Auth0 configuration – replace with your own values
-    // -------------------------------------------------------------
-    const AUTH0_DOMAIN = 'dev-37bfnxzgvlr21vy3.us.auth0.com';
-    const AUTH0_CLIENT_ID = 'OVpzcv3cyeM9Ca0G8zRuG9punYusiGeO';
-    const AUTH0_AUDIENCE = 'https://dev-37bfnxzgvlr21vy3.us.auth0.com/api/v2/                                            
+<script type="module">
+  // -------------------------------------------------------------
+  // Auth0 configuration – replace with your own values
+  // -------------------------------------------------------------
+  const AUTH0_DOMAIN = 'dev-37bfnxzgvlr21vy3.us.auth0.com';
+  const AUTH0_CLIENT_ID = 'OVpzcv3cyeM9Ca0G8zRuG9punYusiGeO';
+  const AUTH0_AUDIENCE = 'https:                                             
 
-    const auth0 = await createAuth0Client({
-      domain: AUTH0_DOMAIN,
-      client_id: AUTH0_CLIENT_ID,
-      audience: AUTH0_AUDIENCE,
-      redirect_uri: window.location.origin
-    });
+  const auth0 = await createAuth0Client({
+    domain: AUTH0_DOMAIN,
+    client_id: AUTH0_CLIENT_ID,
+    audience: AUTH0_AUDIENCE,
+    redirect_uri: window.location.origin
+  });
 
-    let socket = null;
-    let roomId = null;
-    let opponentId = null;
-    let myScore = 0, oppScore = 0;
-    let timer = 600;
-    let timerInterval = null;
+  let socket = null;
+  let roomId = null;
+  let opponentId = null;
+  let myScore = 0, oppScore = 0;
+  let timer = 600;                         
+  let timerInterval = null;
 
-    function show(id) { document.getElementById(id).style.display = 'block'; }
-    function hide(id) { document.getElementById(id).style.display = 'none'; }
+               
+  function show(id)   { document.getElementById(id).style.display = 'block'; }
+  function hide(id)   { document.getElementById(id).style.display = 'none'; }
 
-    function updateTimer() {
-      const m = Math.floor(timer / 60);
-      const s = timer % 60;
-      document.getElementById('timer').textContent = `Time left: ${
-  
+  function updateTimer() {
+    const m = Math.floor(timer / 60);
+    const s = timer % 60;
+    document.getElementById('timer').textContent = `Time left: ${m}:${s.toString().padStart(2, '0')}`;
+    if (--timer <= 0) {
+      clearInterval(timerInterval);
+      // handle timeout here
+    }
+  }
+
+  // -------------------------------------------------------------
+  // Game‑logic stubs – replace with your actual implementation
+  // -------------------------------------------------------------
+  function login()          { /* implement login */ }
+  function signup()         { /* implement signup */ }
+  function playAsGuest()    { /* implement guest play */ }
+  function rollDice()       { /* implement dice roll */ }
+  function exitGame()       { /* implement exit */ }
+  function startAnother()   { /* implement restart */ }
+
+  // Example of how you might start the timer when the game begins
+  // startTimer() { timerInterval = setInterval(updateTimer, 1000); }
+</script>
+</body>
+</html>
