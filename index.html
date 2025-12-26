@@ -11,17 +11,14 @@
     #diceResult img {width:100px;height:100px;}
     #logo {width:200px;height:200px;margin-bottom:20px;}
   </style>
-  <!-- Auth0 SDK -->
-  <script src="https:                                                                          
-  <!-- Socket.io client -->
+  <script src="https:                                                                         
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
-
-  <!-- 1️⃣ Welcome / login screen -->
+  <!-- Screens -->
   <div id="welcome" class="center">
-    <video id="logo" autoplay loop muted style="pointer-events:none;">
-      <source src="https:                                              
+    <video id="logo" autoplay loop muted>
+      <source src="https:                                                  
       Your browser does not support the video tag.
     </video>
     <h2>Welcome to Pokéroll!</h2>
@@ -29,13 +26,9 @@
     <button class="big-btn" onclick="signup()">Sign Up</button>
     <button class="big-btn" onclick="playAsGuest()">Play as Guest</button>
   </div>
-
-  <!-- 2️⃣ Waiting for opponent -->
   <div id="waiting" class="center">
     <h2>Looking for an opponent…</h2>
   </div>
-
-  <!-- 3️⃣ Game screen -->
   <div id="game">
     <h2>Your turn – <span id="opponent"></span></h2>
     <div id="diceResult">Roll the dice!</div>
@@ -46,79 +39,81 @@
     <div>Opponent score: <span id="oppScore">0</span></div>
     <div id="timer">Time left: 10:00</div>
   </div>
-
-  <!-- 4️⃣ Result screen -->
   <div id="result" class="center">
     <h2 id="resultText"></h2>
     <button class="big-btn" onclick="startAnother()">Play Again</button>
   </div>
 
   <script type="module">
-    // -------------------------------------------------------------
-    // Auth0 configuration – replace with your own values
-    // -------------------------------------------------------------
     const AUTH0_DOMAIN = 'dev-37bfnxzgvlr21vy3.us.auth0.com';
     const AUTH0_CLIENT_ID = 'OVpzcv3cyeM9Ca0G8zRuG9punYusiGeO';
-    const AUTH0_AUDIENCE = 'https:';
     const auth0 = await createAuth0Client({
       domain: AUTH0_DOMAIN,
       client_id: AUTH0_CLIENT_ID,
-      audience: AUTH0_AUDIENCE,
       redirect_uri: window.location.origin
     });
 
-    let socket = null;
+    let socket = io('https:                    
     let roomId = null;
     let opponentId = null;
     let myScore = 0, oppScore = 0;
     let timer = 600;
     let timerInterval = null;
 
+                 
     function show(id) { document.getElementById(id).style.display = 'block'; }
     function hide(id) { document.getElementById(id).style.display = 'none'; }
 
-    function updateTimer() {
-      const m = Math.floor(timer / 60);
-      const s = timer % 60;
-      document.getElementById('timer').textContent = `Time left: ${m}:${s.toString().padStart(2, '0')}`;
-      if (--timer <= 0) {
-        clearInterval(timerInterval);
-        // handle timeout here
-      }
+           
+    async function login() {
+      await auth0.loginWithPopup();
+      showGameUI();
     }
-
-    // -------------------------------------------------------------
-    // Game‑logic stubs – replace with your actual implementation
-    // -------------------------------------------------------------
-    function login() {
-      alert('Login button works!');
+    async function signup() {
+      await auth0.loginWithPopup({ screen_hint: 'signup' });
+      showGameUI();
     }
-
-    function signup() {
-      alert('Signup button works!');
-    }
-
     function playAsGuest() {
-      /* implement guest play */
+      show('waiting');
+      socket.emit('join', 'guest');
     }
+
+                 
+    socket.on('joined', (data) => {
+      opponentId = data.opponent;
+      show('game');
+      hide('waiting');
+      startTimer();
+    });
 
     function rollDice() {
-      /* implement dice roll */
+      const roll = Math.floor(Math.random() * 6) + 1;
+      document.getElementById('diceResult').innerText = `You rolled: ${roll}`;
+      socket.emit('roll', { roomId, roll });
+      updateScore(roll);
     }
 
-    function exitGame() {
-      /* implement exit */
+    function updateScore(roll) {
+      myScore += roll;
+      document.getElementById('myScore').innerText = myScore;
     }
 
-    function startAnother() {
-      /* implement restart */
+    socket.on('opponent-roll', (data) => {
+      oppScore += data.roll;
+      document.getElementById('oppScore').innerText = oppScore;
+    });
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        const m = Math.floor(timer / 60);
+        const s = timer % 60;
+        document.getElementById('timer').textContent = `Time left: ${m}:${s.toString().padStart(2, '0')}`;
+        if (--timer <= 0) clearInterval(timerInterval);
+      }, 1000);
     }
 
-    // Example of how you might start the timer when the game begins
-    // startTimer() {
-    //   timerInterval = setInterval(updateTimer, 1000);
-    // }
+    function exitGame() { /* implement */ }
+    function startAnother() { /* implement */ }
   </script>
 </body>
-                       </html>
-                       
+</html>
