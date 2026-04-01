@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pokéroll 🎲</title>
+<script src="/socket.io/socket.io.js"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:Arial;text-align:center;background:linear-gradient(135deg,#89f7fe,#66a6ff);padding:1rem;}
+
+#avatarMenu{position:absolute;top:10px;left:10px;width:60px;height:60px;border-radius:50%;background:#ffcc00;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+#avatarOptions{display:none;position:absolute;top:70px;left:10px;background:white;padding:10px;border-radius:10px;}
+
+#lobby,#game,#result{display:none;}
+#lobby{display:block;margin-top:80px;}
+
+#diceResult{font-size:4rem;margin:20px 0;}
+
+#pokemonContainer{display:flex;flex-wrap:wrap;justify-content:center;}
+
+.pokemon-card{margin:10px;}
+
+#playersContainer{display:flex;justify-content:center;gap:10px;margin:10px;}
+.player-box{background:white;padding:10px;border-radius:10px;}
+</style>
+</head>
+
+<body>
+
+<div id="avatarMenu">👤</div>
+<div id="avatarOptions">
+<button onclick="changeAvatar()">Avatar</button>
+<button onclick="toggleSound()">Sound</button>
+<button onclick="login()">Login</button>
+<button onclick="signup()">Signup</button>
+</div>
+
+<div id="lobby">
+<h2>Pokéroll 🎲</h2>
+<p id="username"></p>
+
+<button onclick="findMatch(1)">Bot 🤖</button>
+<button onclick="findMatch(2)">1v1 👥</button>
+<button onclick="findMatch(3)">3 Players 👥👥👥</button>
+<button onclick="findMatch(4)">4 Players 👥👥👥👥</button>
+</div>
+
+<div id="game">
+<h2>Battle ⚔️</h2>
+
+<div id="playersContainer"></div>
+
+<div id="diceResult">🎲</div>
+<button onclick="rollDice()">Roll</button>
+
+<div id="pokemonContainer"></div>
+
+<p>Time: <span id="timer">60</span></p>
+</div>
+
+<div id="result">
+<h2 id="resultText"></h2>
+<button onclick="location.reload()">Play Again</button>
+</div>
+
+<script>
+let socket=io();
+
+let myId;
+let players=[];
+let roomId;
+
+let myScore=0;
+let timer=60;
+let gameActive=false;
+let botMode=false;
+
+/* ---------- USER ---------- */
+let guestId="guest"+Math.floor(Math.random()*10000);
+document.getElementById("username").innerText=guestId;
+
+/* ---------- SOUND ---------- */
+let soundEnabled=true;
+const sounds={
+click:new Audio("assets/sounds/click.mp3"),
+roll:new Audio("assets/sounds/roll.mp3"),
+spawn:new Audio("assets/sounds/spawn.mp3"),
+shiny:new Audio("assets/sounds/shiny.mp3"),
+win:new Audio("assets/sounds/win.mp3"),
+lose:new Audio("assets/sounds/lose.mp3")
+};
+
+function playSound(s){
+if(!soundEnabled)return;
+s.currentTime=0;
+s.play();
+}
+
+document.addEventListener("click",e=>{
+if(e.target.closest("button")) playSound(sounds.click);
+});
+
+/* ---------- AVATAR ---------- */
+document.getElementById("avatarMenu").onclick=()=>{
+let m=document.getElementById("avatarOptions");
+m.style.display=m.style.display==="block"?"none":"block";
+};
+
+function changeAvatar(){alert("later");}
+function toggleSound(){soundEnabled=!soundEnabled;}
+function login(){alert("later");}
+function signup(){alert("later");}
+
+/* ---------- MATCH ---------- */
+function findMatch(num){
+if(num===1){botMode=true;startGame();}
+else{
+socket.emit("find-match",{players:num});
+document.getElementById("lobby").innerHTML="Finding match...";
+}
+}
+
+socket.on("match-found",data=>{
+players=data.players;
+roomId=data.roomId;
+startGame();
+});
+
+/* ---------- START ---------- */
+function startGame(){
+document.getElementById("lobby").style.display="none";
+document.getElementById("game").style.display="block";
+
+myScore=0;
+timer=60;
+gameActive=true;
+
+renderPlayers();
+startTimer();
+}
+
+/* ---------- PLAYERS ---------- */
+function renderPlayers(){
+let c=document.getElementById("playersContainer");
+c.innerHTML="";
+
+players.forEach(id=>{
+let d=document.createElement("div");
+d.className="player-box";
+d.innerHTML=`${id===socket.id?"You":"Player"}<br><span id="score-${id}">0</span>`;
+c.appendChild(d);
+});
+}
+
+/* ---------- POKEMON ---------- */
+const LEG=[144,145,146,150,151];
+const GMAX=[3,6,9,12];
+
+async function getPokemon(){
+let id=Math.floor(Math.random()*905)+1;
+let r=await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+let d=await r.json();
+
+let shiny=Math.random()<0.05;
+let leg=LEG.includes(id);
+let g=GMAX.includes(id);
+
+let score=0;
+if(shiny) score=5;
+else if(leg&&g) score=3;
+else if(leg) score=1;
+else if(g) score=2;
+
+return{name:d.name,img:d.sprites.front_default,score,shiny};
+}
+
+/* ---------- ROLL ---------- */
+async function rollDice(){
+if(!gameActive)return;
+
+playSound(sounds.roll);
+
+let val=Math.floor(Math.random()*6)+1;
+document.getElementById("diceResult").innerText=val;
+
+let cont=document.getElementById("pokemonContainer");
+cont.innerHTML="";
+
+let round=0;
+
+for(let i=0;i<val;i++){
+let p=await getPokemon();
+round+=p.score;
+
+playSound(sounds.spawn);
+if(p.shiny) playSound(sounds.shiny);
+
+let div=document.createElement("div");
+div.className="pokemon-card";
+div.innerHTML=`<img src="${p.img}" width="60"><br>${p.name}<br>${p.score}`;
+cont.appendChild(div);
+}
+
+myScore+=round;
+document.getElementById("score-"+socket.id).innerText=myScore;
+
+if(botMode){
+let botScore=Math.floor(Math.random()*6);
+let botId="bot";
+if(!document.getElementById("score-bot")){
+players.push("bot");
+renderPlayers();
+}
+let el=document.getElementById("score-bot");
+el.innerText=parseInt(el.innerText)+botScore;
+}else{
+socket.emit("roll",{roomId,roll:round,playerId:socket.id});
+}
+}
+
+/* ---------- OPPONENT ---------- */
+socket.on("opponent-roll",data=>{
+let el=document.getElementById("score-"+data.playerId);
+if(el){
+el.innerText=parseInt(el.innerText)+data.roll;
+}
+});
+
+/* ---------- TIMER ---------- */
+function startTimer(){
+let i=setInterval(()=>{
+document.getElementById("timer").innerText=timer;
+timer--;
+
+if(timer<0){
+clearInterval(i);
+gameActive=false;
+endGame();
+}
+},1000);
+}
+
+/* ---------- END ---------- */
+function endGame(){
+document.getElementById("game").style.display="none";
+document.getElementById("result").style.display="block";
+
+let scores={};
+players.forEach(id=>{
+let el=document.getElementById("score-"+id);
+scores[id]=el?parseInt(el.innerText):0;
+});
+
+let winner=Object.keys(scores).reduce((a,b)=>scores[a]>scores[b]?a:b);
+
+let text=(winner===socket.id)?"You Win 🎉":"You Lose 😢";
+
+if(winner===socket.id) playSound(sounds.win);
+else playSound(sounds.lose);
+
+document.getElementById("resultText").innerText=text;
+}
+</script>
+
+</body>
+</html>
