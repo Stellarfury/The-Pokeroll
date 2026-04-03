@@ -1,22 +1,14 @@
-"scripts": {
-  "start": "node server.js"
-}
 {
-  "dependencies": {
-    "discord.js": "^14.26.0",
-    "express": "^5.2.1",
-    "socket.io": "^4.8.3"
-  },
-  "name": "the-pokeroll-main",
+  "name": "pokeroll",
   "version": "1.0.0",
-  "description": "A lightweight web game that lets users generate random Pokémon (or whatever fun logic you add) and saves their session with Auth0 authentication.",
-  "main": "app.js",
+  "description": "Multiplayer Pokeroll Game",
+  "main": "server.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs"
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  }
 }
