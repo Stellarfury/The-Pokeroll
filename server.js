@@ -6,38 +6,56 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server);
 
-app.use(express.static("."));
+// Serve frontend files
+app.use(express.static("./"));
 
-let waiting = {2:[],3:[],4:[]};
+// Waiting players
+let waiting = { 2: [], 3: [], 4: [] };
 
-io.on("connection",(socket)=>{
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
 
-socket.on("find-match",({players})=>{
-if(!waiting[players]) return;
+  // 🎮 Find match
+  socket.on("find-match", ({ players }) => {
+    if (!waiting[players]) return;
 
-waiting[players].push(socket);
+    waiting[players].push(socket);
 
-if(waiting[players].length===players){
-let roomId="room-"+Math.random().toString(36).substr(2,5);
-let roomPlayers=waiting[players];
+    if (waiting[players].length === players) {
+      let roomId = "room-" + Math.random().toString(36).slice(2, 7);
+      let roomPlayers = waiting[players];
 
-roomPlayers.forEach(s=>s.join(roomId));
+      roomPlayers.forEach((s) => s.join(roomId));
 
-roomPlayers.forEach(s=>{
-s.emit("match-found",{
-roomId,
-players:roomPlayers.map(p=>p.id)
+      roomPlayers.forEach((s) => {
+        s.emit("match-found", {
+          roomId,
+          players: roomPlayers.map((p) => p.id),
+        });
+      });
+
+      waiting[players] = [];
+    }
+  });
+
+  // 🎲 Roll event
+  socket.on("roll", ({ roomId, roll, playerId }) => {
+    socket.to(roomId).emit("opponent-roll", { roll, playerId });
+  });
+
+  // ❌ Handle disconnect (important)
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+
+    for (let key in waiting) {
+      waiting[key] = waiting[key].filter((s) => s.id !== socket.id);
+    }
+  });
 });
-});
 
-waiting[players]=[];
-}
-});
+// 🌍 Railway-friendly port
+const PORT = process.env.PORT || 3000;
 
-socket.on("roll",({roomId,roll,playerId})=>{
-socket.to(roomId).emit("opponent-roll",{roll,playerId});
+server.listen(PORT, () => {
+  console.log("Running on " + PORT);
 });
-
-});
-
-server.listen(3000,()=>console.log("Running on 3000"));
